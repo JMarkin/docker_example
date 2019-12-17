@@ -1,0 +1,39 @@
+version: '3'
+
+networks:
+  server:
+
+services:
+  nginx:
+    container_name: "example_nginx"
+    image: example_nginx
+    build:
+        context: $PWD
+        dockerfile: $PWD/docker/nginx/Dockerfile
+    restart: always
+    ports:
+      - 8000:80
+    depends_on:
+      - web
+    networks:
+      server:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  web:
+    container_name: "example_web"
+    image: example_web
+    build:
+      context: $PWD
+      dockerfile: $PWD/docker/backend/Dockerfile
+    restart: always
+    networks:
+      server:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

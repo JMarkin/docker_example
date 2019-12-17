@@ -1,0 +1,23 @@
+Vagrant.configure('2') do |config|
+
+  config.vm.box = 'bento/ubuntu-16.04'
+
+  config.vm.network 'public_network', :bridge => 'enp7s0'
+
+  %w(
+    docker-1
+    docker-2
+    docker-3
+  ).each do |host_name|
+    config.vm.define host_name do |host|
+
+      host.vm.hostname = host_name
+
+      # install Docker
+      host.vm.provision 'docker'
+
+    end
+
+  end
+  
+end

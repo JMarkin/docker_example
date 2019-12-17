@@ -1,0 +1,64 @@
+import fabricio
+import os
+
+from fabric import api as fab
+from fabricio import tasks, docker
+from fabricio.misc import AvailableVagrantHosts
+
+hosts = AvailableVagrantHosts(guest_network_interface='eth1')
+
+swarm_host='192.168.0.199'
+
+stack = tasks.DockerTasks(
+    service=docker.Stack(
+        name='example_docker',
+        options={
+            'compose-file': 'docker/docker-compose.yml',
+            'env': f'PWD={os.getcwd()}',
+        },
+    ),
+    hosts=hosts,
+
+    # rollback_command=True,  # show `rollback` command in the list
+    # migrate_commands=True,  # show `migrate` and `migrate-back` commands in the list
+    # backup_commands=True,  # show `backup` and `restore` commands in the list
+    # pull_command=True,  # show `pull` command in the list
+    # update_command=True,  # show `update` command in the list
+    # revert_command=True,  # show `revert` command in the list
+    # destroy_command=True,  # show `destroy` command in the list
+)
+
+
+@fab.task(name='swarm-init')
+@fab.serial
+def swarm_init():
+    """
+    enable Docker swarm mode
+    """
+    join_token = fabricio.run(
+        'docker swarm join-token --quiet manager',
+        ignore_errors=True
+    )
+    def init():
+        if not init.join_command:
+            init.join_command = (
+                'docker swarm join --token {join_token} {host}:2377'
+            ).format(join_token=join_token, host=swarm_init_ip)
+        else:
+            fabricio.run(init.join_command, ignore_errors=True, quiet=False)
+
+    init.join_command = None
+    with fab.settings(hosts=hosts):
+        fab.execute(init)
+
+
+@fab.task(name='swarm-reset')
+def swarm_reset():
+    """
+    enable Docker swarm mode
+    """
+    def reset():
+        fabricio.run('docker swarm leave --force', ignore_errors=True, quiet=False)
+
+    with fab.settings(hosts=hosts):
+        fab.execute(reset)

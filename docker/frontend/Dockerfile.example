@@ -1,0 +1,12 @@
+FROM node:13-alpine as front
+
+WORKDIR /app
+
+COPY ./app/frontend/package.json /app/package.json
+COPY ./app/frontend/package-lock.json /app/package-lock.json
+
+RUN npm install
+
+COPY ./app/frontend /app
+
+RUN npm run build
