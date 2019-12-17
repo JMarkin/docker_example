@@ -24,3 +24,5 @@ yarn-error.log*
 Dockerfile
 docker-compose.yml
 .vagrant
+__pycache__
+*.pyc
